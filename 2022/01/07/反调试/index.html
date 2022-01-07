@@ -1,0 +1,190 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>反调试 | yaoxixixi's blog</title><meta name="keywords" content="Re"><meta name="author" content="yaoxixixi"><meta name="copyright" content="yaoxixixi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="@TOC核心原理的最后一章是反调试，闲的无聊，在宿舍又读了一遍反调试，做了个总结。 静态反调试PEBPEB被广泛运用于反调试手段这里一共有四个标志 12340x2 BeingDebugged0xc Ldr0x1b ProcessHeap0x68 NtGlobaFlag 首先说第一个BeingDebugged这个标志对应的api就是我们最常见的IsDebuggerPresent，当其值为1的时候代表">
+<meta property="og:type" content="article">
+<meta property="og:title" content="反调试">
+<meta property="og:url" content="https://yaoxixixi.github.io/2022/01/07/%E5%8F%8D%E8%B0%83%E8%AF%95/index.html">
+<meta property="og:site_name" content="yaoxixixi&#39;s blog">
+<meta property="og:description" content="@TOC核心原理的最后一章是反调试，闲的无聊，在宿舍又读了一遍反调试，做了个总结。 静态反调试PEBPEB被广泛运用于反调试手段这里一共有四个标志 12340x2 BeingDebugged0xc Ldr0x1b ProcessHeap0x68 NtGlobaFlag 首先说第一个BeingDebugged这个标志对应的api就是我们最常见的IsDebuggerPresent，当其值为1的时候代表">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/fbec7e5caf754e8b9f7ac959378515f3.png?x-oss-process=,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16">
+<meta property="article:published_time" content="2022-01-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-07T08:01:23.526Z">
+<meta property="article:author" content="yaoxixixi">
+<meta property="article:tag" content="Re">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/fbec7e5caf754e8b9f7ac959378515f3.png?x-oss-process=,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yaoxixixi.github.io/2022/01/07/%E5%8F%8D%E8%B0%83%E8%AF%95/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '反调试',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-01-07 16:01:23'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://img-blog.csdnimg.cn/ac0114f70bf94f5fbe59e134a92dfe6b.png?x-oss-process=,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">34</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">14</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/About/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://img-blog.csdnimg.cn/fbec7e5caf754e8b9f7ac959378515f3.png?x-oss-process=,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">yaoxixixi's blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/About/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">反调试</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-01-06T16:00:00.000Z" title="发表于 2022-01-07 00:00:00">2022-01-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-01-07T08:01:23.526Z" title="更新于 2022-01-07 16:01:23">2022-01-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Re/">Re</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="反调试"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>@<a href="%E7%9B%AE%E5%BD%95">TOC</a><br>核心原理的最后一章是反调试，闲的无聊，在宿舍又读了一遍反调试，做了个总结。</p>
+<h2 id="静态反调试"><a href="#静态反调试" class="headerlink" title="静态反调试"></a>静态反调试</h2><h3 id="PEB"><a href="#PEB" class="headerlink" title="PEB"></a>PEB</h3><p>PEB被广泛运用于反调试手段<br>这里一共有四个标志</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0x2</span> BeingDebugged</span><br><span class="line"><span class="number">0xc</span> Ldr</span><br><span class="line"><span class="number">0x1b</span> ProcessHeap</span><br><span class="line"><span class="number">0x68</span> NtGlobaFlag</span><br></pre></td></tr></table></figure>
+<p>首先说第一个BeingDebugged<br>这个标志对应的api就是我们最常见的IsDebuggerPresent，当其值为1的时候代表程序被调试，破解方法就是在内存中把1修改为0即可。</p>
+<p>第二个Ldr标志，这个只适用于xp操作系统<br>PEB.Ldr指向PEB_LDR_DATA结构体，这个结构体实在堆内存创建的，而在调试的时候，未使用的堆内存会被填充为0xfeeefeee，只要我们把其修改为null，既可绕过反调试</p>
+<p>第三个标志ProcessHeap，同样只使用于xp系统<br>ProcessHeap可以通过GetProcessHeap()这个api来获取<br>它指向HEAP结构体的指针<br><img src="https://img-blog.csdnimg.cn/580b86d244db45b683aef296fdbcd3a9.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述">第三个flags成员和第四个ForceFlags成员被用作反调试<br>正常情况下flags的值为2 ForceFlags的值为0</p>
+<p>第四个标志就是NtGlobaFlag<br>这个在调试的时候，他的值会被设置为0x70，而在附加调试器的时候他的值不会改变<br>把其值调会0，即可绕过反调试</p>
+<h3 id="NtQueryInformationProcess"><a href="#NtQueryInformationProcess" class="headerlink" title="NtQueryInformationProcess()"></a>NtQueryInformationProcess()</h3><p>NtQueryInformationProcess()是与进程相关联的api，通过调用这个api可以获取与进程相关的调试信息，当为这个api的第二个参数设置特定值，并调用这个函数的时候，相关信息会返回到第三个参数上。<br><img src="https://img-blog.csdnimg.cn/3f59c05f6729425e8d245601fde5333b.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述">第二个参数是枚举类型<br><img src="https://img-blog.csdnimg.cn/83a19267fdd54bf9a405d1197beba011.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述">与反调试相关联的就是注释的这三个参数<br>ProcesDebugPort<br>进程调试的时候，系统会为其分配一个端口，调用此api就可以返回端口<br>当第二个参数设置为7时，非调式时第三个参数为0，调试的时候，其值为 0xffffffff<br>ProcessDebugObjectHandle<br>当第二个参数设置为0x1e时，第三个参数可以获取调试对象的句柄<br>非调试 句柄值为0 调试时句柄的值存在<br>ProcessDebuggFlags<br>当第二个参数设置为0x1f的时候，第三个参数为调试的标志<br>被调试为1 不被调试为0</p>
+<h3 id="NtQuerysystemInformation"><a href="#NtQuerysystemInformation" class="headerlink" title="NtQuerysystemInformation()"></a>NtQuerysystemInformation()</h3><p>NtQuerysystemInformation() 基于调试环境检测的反调试技术，利用这个api可以判断当前操作系统是否在调试模式下<br><img src="https://img-blog.csdnimg.cn/67b02fcf2ade4e57a60c632a595e1af2.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/bb992af323514a1480ae088b360e79de.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<p>这个api的第一个参数是枚举类型，当向第一个参数穿入0x23时，第二个参数在调试的时候会被设置为1</p>
+<h3 id="NtQueryObject"><a href="#NtQueryObject" class="headerlink" title="NtQueryObject()"></a>NtQueryObject()</h3><p>系统中某个调试器调试进程时，会创建1个调试对象类型的内核对象。检测该对象是否存在即可判断是否有进程在被调试<br>和之前的类型，第二个参数时枚举类型，传入特定值后，相关信息会被返回到第三个参数<br>为了防止反调试，只需保证第二个参数的值不是3而是0即可<br><img src="https://img-blog.csdnimg.cn/31cf6fc33e7846efa80749063e5a8106.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<h3 id="ZwSetInformationThread"><a href="#ZwSetInformationThread" class="headerlink" title="ZwSetInformationThread()"></a>ZwSetInformationThread()</h3><p>调用这个api可以把被调试的程序从调试的程序中分离出来<br>只要第二个参数设置为0x11即可<br>破解方法就是把第二个参数的值修改为0</p>
+<p>这个api的工作原理是把线程隐藏起来，从而使调试器接受不到信息，就无法进行调试<br>还有一个和此类似的api是DebugActiveProcessStop()，它的原理是分离调试器和被调试的进程</p>
+<h3 id="TLS回调函数"><a href="#TLS回调函数" class="headerlink" title="TLS回调函数"></a>TLS回调函数</h3><p>这个就比较常见了，TLS回调函数会优先于EP代码执行，可以在前面加一些反调试，或者smc等手段，就可以达到反调试的效果，曾经被这个题目折磨过一次，记忆尤新</p>
+<h3 id="ETC"><a href="#ETC" class="headerlink" title="ETC"></a>ETC</h3><p>这方法就很鸡贼了<br><img src="https://img-blog.csdnimg.cn/93927e5c694444e880d3b137a68dc85b.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<h2 id="动态反调试"><a href="#动态反调试" class="headerlink" title="动态反调试"></a>动态反调试</h2><h3 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h3><p>关于异常的东西，我会在下篇博客里好好学习一下，因为最近遇到太多异常的题目了<br>关于异常的反调试，就是说，在正常的程序执行中，遇到一个异常（比如说除0），如果程序是没有被调试的，那么他就会交给特定的异常处理代码，而程序如果是在被调试，那么就会交给调试器来处理。</p>
+<p>这里有一个api是SetUnhandledExtionFilter()<br>当程序发生异常时，SEH没有处理或者没有SEH的时候，就会调用这个api来执行程序的最后一个异常处理器（TOP Level Exception Filter），就是我们平常遇见终止程序的那个框框<br>而当程序在调试的时候，可以通过这个api来修改最后的异常处理器，新的异常处理器，修改修改eip<br>就可以到达反调试的效果</p>
+<h3 id="Timing-Check"><a href="#Timing-Check" class="headerlink" title="Timing Check"></a>Timing Check</h3><p>时间检测，这个还是可以很好理解的，调试的时候两条指令直接消耗很长的时间，而正常运行的时候，就一下子跑过去了。<br>x86中有一个叫TSC的64位寄存器，可以用来保存时间，<br>RDTSC这条汇编指令可以把TSC寄存器的值读到EDX:EAX</p>
+<h3 id="INT-2d"><a href="#INT-2d" class="headerlink" title="INT 2d"></a>INT 2d</h3><p>这条指令有两个特性<br>1忽略下一个字节<br>2可以一直运行到断点处</p>
+<p>这两条是我在书上总结出来的，当然我还在网上发现了不一样的说法<br>第 0x2d（45） 号中断处理函数是 KiDebugService，执行Int 2dh指令时，进程如果没有处于被调试状态，将会抛出异常，如果在被调试状态则能够正常执行。我们可以利用这一点检测调试器的存在。</p>
+<p>如果有调试器，调试器就会接管这个 int 2dh 产生的异常从而不走我们设置的异常回调处理函数，当然如果调试器选择不接管这个异常我们是无法检测出调试器的</p>
+<h3 id="0xcc"><a href="#0xcc" class="headerlink" title="0xcc"></a>0xcc</h3><p>我们调试的时候，经常会在一些api上下断点，那么只要检查api的首位是不是0xcc就可以判断是否在调试，当然这种判断不是特别严谨，破解方法的话就是不在api的首位下断点，或者不下0xcc断点。<br>同时，这里还有一种校验和的判断手法，就是把这一些代码的汇编加起来，看看有没有改变等手段</p>
+<h2 id="高级反调试"><a href="#高级反调试" class="headerlink" title="高级反调试"></a>高级反调试</h2><h3 id="PE保护器"><a href="#PE保护器" class="headerlink" title="PE保护器"></a>PE保护器</h3><p>就是加壳</p>
+<h3 id="垃圾代码"><a href="#垃圾代码" class="headerlink" title="垃圾代码"></a>垃圾代码</h3><p>一句话用5句话来说，就要耗死逆，ollvm就是这么干的</p>
+<h3 id="扰乱代码对齐"><a href="#扰乱代码对齐" class="headerlink" title="扰乱代码对齐"></a>扰乱代码对齐</h3><p>花指令</p>
+<h3 id="加密-解密"><a href="#加密-解密" class="headerlink" title="加密/解密"></a>加密/解密</h3><p>在壳中或者smc字解码里常见</p>
+<h3 id="api重定向"><a href="#api重定向" class="headerlink" title="api重定向"></a>api重定向</h3><p>把程序的api保护起来，放在其他的地方，这样使我们不能够通过下断点来寻找api</p>
+<h3 id="Debug-Blocker"><a href="#Debug-Blocker" class="headerlink" title="Debug Blocker"></a>Debug Blocker</h3><p>双进程保护，这种保护手段在最近的题目中经常遇见，<br>就是自己的一部分代码作为调试器调试自己的另一部分代码 那么在运行程序的时候不能附加调试器了<br>然后在里面设置一些smc或者修改一些eip的手段，达到混淆代码的目的<br>当时记录的一些笔记<br><img src="https://img-blog.csdnimg.cn/cde8fa98591f44fcace66f6e6647ccbc.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>反调试的题目反正我遇见的不是很多，但是学习一下还是很有必要的<br>继续解决异常处理的问题</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">yaoxixixi</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://yaoxixixi.github.io/2022/01/07/%E5%8F%8D%E8%B0%83%E8%AF%95/">https://yaoxixixi.github.io/2022/01/07/%E5%8F%8D%E8%B0%83%E8%AF%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yaoxixixi.github.io" target="_blank">yaoxixixi's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Re/">Re</a></div><div class="post_share"><div class="social-share" data-image="https://img-blog.csdnimg.cn/fbec7e5caf754e8b9f7ac959378515f3.png?x-oss-process=,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAeWFveGl4aXhp,size_20,color_FFFFFF,t_70,g_se,x_16" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E5%8F%8D%E8%B0%83%E8%AF%95"><span class="toc-number">1.</span> <span class="toc-text">静态反调试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PEB"><span class="toc-number">1.1.</span> <span class="toc-text">PEB</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NtQueryInformationProcess"><span class="toc-number">1.2.</span> <span class="toc-text">NtQueryInformationProcess()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NtQuerysystemInformation"><span class="toc-number">1.3.</span> <span class="toc-text">NtQuerysystemInformation()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NtQueryObject"><span class="toc-number">1.4.</span> <span class="toc-text">NtQueryObject()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ZwSetInformationThread"><span class="toc-number">1.5.</span> <span class="toc-text">ZwSetInformationThread()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TLS%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0"><span class="toc-number">1.6.</span> <span class="toc-text">TLS回调函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ETC"><span class="toc-number">1.7.</span> <span class="toc-text">ETC</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%8F%8D%E8%B0%83%E8%AF%95"><span class="toc-number">2.</span> <span class="toc-text">动态反调试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8"><span class="toc-number">2.1.</span> <span class="toc-text">异常</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Timing-Check"><span class="toc-number">2.2.</span> <span class="toc-text">Timing Check</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#INT-2d"><span class="toc-number">2.3.</span> <span class="toc-text">INT 2d</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0xcc"><span class="toc-number">2.4.</span> <span class="toc-text">0xcc</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AB%98%E7%BA%A7%E5%8F%8D%E8%B0%83%E8%AF%95"><span class="toc-number">3.</span> <span class="toc-text">高级反调试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PE%E4%BF%9D%E6%8A%A4%E5%99%A8"><span class="toc-number">3.1.</span> <span class="toc-text">PE保护器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9E%83%E5%9C%BE%E4%BB%A3%E7%A0%81"><span class="toc-number">3.2.</span> <span class="toc-text">垃圾代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%B0%E4%B9%B1%E4%BB%A3%E7%A0%81%E5%AF%B9%E9%BD%90"><span class="toc-number">3.3.</span> <span class="toc-text">扰乱代码对齐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E5%AF%86-%E8%A7%A3%E5%AF%86"><span class="toc-number">3.4.</span> <span class="toc-text">加密&#x2F;解密</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#api%E9%87%8D%E5%AE%9A%E5%90%91"><span class="toc-number">3.5.</span> <span class="toc-text">api重定向</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Debug-Blocker"><span class="toc-number">3.6.</span> <span class="toc-text">Debug Blocker</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2021 - 2022 By yaoxixixi</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"></div><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
