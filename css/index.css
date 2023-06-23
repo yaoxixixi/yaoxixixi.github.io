@@ -1363,7 +1363,7 @@ input::placeholder {
   z-index: -999;
   width: 100%;
   height: 100%;
-  background: url(https://github.com/yaoxixixi/picture/blob/10a3cd263ed1d5680c0f7f8144c5ceb750af9f06/notdata/notdata/back2.jpg);
+  background: url(https://raw.githubusercontent.com/yaoxixixi/picture/main/notdata/notdata/back2.jpg);
   background-attachment: local;
   background-position: center;
   -webkit-background-size: cover;
