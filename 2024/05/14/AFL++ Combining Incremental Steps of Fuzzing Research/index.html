@@ -1,0 +1,218 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>paper ing | yaoxixixi's blog</title><meta name="keywords" content="paper"><meta name="author" content="yaoxixixi"><meta name="copyright" content="yaoxixixi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="AFL++: Combining Incremental Steps of Fuzzing Research摘要在本文中，我们介绍了AFL++，一个社区驱动的开源工具，它结合了最先进的模糊研究，使研究具有可比性，可重复性，可组合性，最重要的是可用性。它提供了各种新颖的功能，例如它的Custom Mutator API，能够在许多阶段扩展模糊过程。有了它，经验丰富的安全测试人员也可以编写针对特定目">
+<meta property="og:type" content="article">
+<meta property="og:title" content="paper ing">
+<meta property="og:url" content="https://yaoxixixi.github.io/2024/05/14/AFL++%20Combining%20Incremental%20Steps%20of%20Fuzzing%20Research/index.html">
+<meta property="og:site_name" content="yaoxixixi&#39;s blog">
+<meta property="og:description" content="AFL++: Combining Incremental Steps of Fuzzing Research摘要在本文中，我们介绍了AFL++，一个社区驱动的开源工具，它结合了最先进的模糊研究，使研究具有可比性，可重复性，可组合性，最重要的是可用性。它提供了各种新颖的功能，例如它的Custom Mutator API，能够在许多阶段扩展模糊过程。有了它，经验丰富的安全测试人员也可以编写针对特定目">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/yaoxixixi/picture/main/notdata/notdata/back1.png">
+<meta property="article:published_time" content="2024-05-13T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-05-14T13:51:52.896Z">
+<meta property="article:author" content="yaoxixixi">
+<meta property="article:tag" content="paper">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/yaoxixixi/picture/main/notdata/notdata/back1.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yaoxixixi.github.io/2024/05/14/AFL++%20Combining%20Incremental%20Steps%20of%20Fuzzing%20Research/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'paper ing',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-05-14 21:51:52'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://raw.githubusercontent.com/yaoxixixi/picture/main/notdata/notdata/yao.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">43</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">8</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/About/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://raw.githubusercontent.com/yaoxixixi/picture/main/notdata/notdata/back1.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">yaoxixixi's blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/About/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">paper ing</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-05-13T16:00:00.000Z" title="发表于 2024-05-14 00:00:00">2024-05-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-05-14T13:51:52.896Z" title="更新于 2024-05-14 21:51:52">2024-05-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/paper/">paper</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="paper ing"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><hr>
+<h1 id="AFL-Combining-Incremental-Steps-of-Fuzzing-Research"><a href="#AFL-Combining-Incremental-Steps-of-Fuzzing-Research" class="headerlink" title="AFL++: Combining Incremental Steps of Fuzzing Research"></a>AFL++: Combining Incremental Steps of Fuzzing Research</h1><h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>在本文中，我们介绍了AFL++，一个社区驱动的开源工具，它结合了最先进的模糊研究，使研究具有可比性，可重复性，可组合性，最重要的是可用性。它提供了各种新颖的功能，例如它的Custom Mutator API，能够在许多阶段扩展模糊过程。有了它，经验丰富的安全测试人员也可以编写针对特定目标的突变。我们希望AFL++不仅能成为当前研究的新基准工具，也能成为未来研究的新基准工具，因为它可以快速测试新技术，不仅可以评估单一技术与最新技术的有效性，还可以与其他技术相结合。本文对精挑细选的模糊测试技术进行了评价，指出虽然每种新的模糊测试方法都能提高某些目标的性能，但却会降低其他目标的性能。这是未来模糊研究在评估时应该考虑的一个问题。</p>
+<p>这里的Custom Mutator可以用来用户根据特定的需求和场景编写自己的变异器。</p>
+<p><a target="_blank" rel="noopener" href="https://aflplus.plus/docs/custom_mutators/">自定义 Mutator |AFL++</a></p>
+<h2 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1 介绍"></a>1 介绍</h2><p>在2016年发表的论文(State of) The Art of War: Offensive Techniques in Binary Analysis中提到用符号辅助fuzz所识别的漏洞产出是符号执行的三倍。在本文中，我们试图通过提高广泛可用性、研究支持、模糊测试的标准，以及为研究人员提供可扩展的API来解决这些问题，即AFL++。AFL++以AFL为基础，这是因为AFL的长时间没有维护，但却仍有很多可用补丁。而不是正在维护中的两种fuzz：Libfuzzer和Honggfuzz。同时文章还提到了与AFL研究路线不同的fuzz：Redqueen。AFL++应该广泛吸收不同的特点。</p>
+<p>对于Redqueen指出了AFL的两个基本问题，一个是文件格式的问题，测试输入缺乏正确的魔数，目标程序可能会拒绝处理该输入；另一个是校验问题，如果测试输入中的校验和或哈希值不正确，目标程序可能会拒绝处理该输入，导致模糊测试无法进行。</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/72839694">跟着白泽读论文丨REDQUEEN: Fuzzing with Input-to-State* - 知乎 (zhihu.com)</a></p>
+<p>目标：</p>
+<ol>
+<li><p>我们提出afl++，将最近的模糊研究纳入一个可用的工具。</p>
+</li>
+<li><p>我们讨论了afl++新颖的自定义Mutator API，这是一种可接近的、面向未来的实现方式，并结合了未来的研究。</p>
+</li>
+<li><p>使用afl++，我们评估了一系列合并的技术和特性，以及它们之间的相互作用。</p>
+</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://github.com/AFLplusplus">AFL++源码</a></p>
+<h2 id="2-AFL和一些它的改进"><a href="#2-AFL和一些它的改进" class="headerlink" title="2 AFL和一些它的改进"></a>2 AFL和一些它的改进</h2><h3 id="2-1-AFL"><a href="#2-1-AFL" class="headerlink" title="2.1 AFL"></a>2.1 AFL</h3><p>AFL是以覆盖率为导向的fuzz，在测试过程中应该尽可能的提高代码的覆盖率，它以块为单位，边做分支，保存路径到一个共享图中。对于AFL的突变包括翻转，加减，替换，甚至是无规律的增删改插等等。AFL还使用了forkserver用来减少程序开销，对于持久化测试还会patch文件来提高性能。</p>
+<h3 id="2-2-智能调度"><a href="#2-2-智能调度" class="headerlink" title="2.2 智能调度"></a>2.2 智能调度</h3><p>调度器的目标通常是通过智能的测试用例选择来提高总体覆盖率和bug检测。</p>
+<p>对于AFLfast来说，强调了两个问题：</p>
+<p>​    1.为了走低频路径，fuzzer应该以什么顺序挑选种子 （一套新的搜索策略）</p>
+<p>​    2.调整每颗种子得输入量。（引入6种功率调度，在fuzz中收集参数中的计算能量。）</p>
+<p>对于MOPT来说，强调了种子调度的横向问题，引入了突变调度，使用自定义粒子群优化算法为突变算子提供不同概率的可能性。这种优化提高了模糊器快速发现覆盖范围的能力。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">摘要：</span><br><span class="line">基于变异的模糊测试是目前最流行的漏洞发现方法之一。其生成有趣测试用例的性能很大程度上取决于变异调度策略。然而，现有的模糊测试通常遵循一个特定的（例如，统一的）分布来选择变异算子，这在寻找通用程序上的漏洞方面效率很低。因此，本文提出了一种新的突变调度方案MOPT，使基于突变的模糊测试更有效地发现漏洞。MOPT采用一种定制的粒子群优化算法（PSO），从模糊有效性的角度寻找算子的最优选择概率分布，并提供一种引领模糊测试模式，以加快PSO的收敛速度。我们将MOPT应用于最先进的模糊测试工具AFL、AFLFAST和Vuzzer，分别实现了MOPT-AFL、-AFLFAST和-Vuzzer，并在13个真实的开源程序上进行了评估。结果表明，MOPT-AFL发现的安全漏洞比AFL多170%，崩溃率比AFL高350%。MOPT AFLFAST和MOPT Vuzzer的表现也优于其对手。此外，广泛的评价也表明，MOPT具有良好的合理性、兼容性和稳定性，同时引入了可忽略不计的成本。</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-一些障碍"><a href="#2-3-一些障碍" class="headerlink" title="2.3 一些障碍"></a>2.3 一些障碍</h3><p>传统上，覆盖引导的模糊测试会受到阻碍，无法探索其背后的代码。典型的障碍是较大的比较，如字符串和校验和检查。和上文中提到的Redqueen说法类似。</p>
+<p>对于LAF-Intel来说，多字节的比较工作，常常拆分为单字节比较，具体来说：</p>
+<ol>
+<li>将&gt;=(和&lt;=)操作符简化为&gt;(&lt;)和==比较链;</li>
+<li>将有符号整数比较改为有符号比较和无符号比较链;</li>
+<li>将所有位宽为64、32或16位的无符号整数比较拆分为8位的多个比较链;</li>
+</ol>
+<p>对于Readqueen来说，上文已经指出解决的两个基本问题。这个模糊器主要关注定义为“输入到状态”(input - to - state, I2S)的比较，这是一种直接依赖于至少一个操作数的输入的比较。作者表明，许多障碍比较都是这种类型的，并开发了一种技术来定位和绕过它们。REDQUEEN首先在其着色阶段增加输入的熵，用随机数据替换字节，同时保持测试用例的覆盖率。通过这种方式，观察I2S比较的操作数，模糊器可以减少猜测的次数，以确定其在输入中的位置。然后，REDQUEEN改变输入，替换从比较中提取的I2S令牌，并再次使用该信息来定位校验和检查并将其修补。在每个模糊测试阶段结束时，REDQUEEN再次使用I2S替换来修复新生成的有趣输入的校验和。如果失败，则检测到补丁的校验和为误报，补丁被删除。</p>
+<h3 id="2-4改变结构化输入"><a href="#2-4改变结构化输入" class="headerlink" title="2.4改变结构化输入"></a>2.4改变结构化输入</h3><p>fuzzer的一个常见问题是，它们可能生成大部分无效的输入，使解析阶段后的程序状态无法访问。</p>
+<p>对于AFLSmart来说，灰盒测试是基于程序运行时刻的外部表现同时又结合程序内部逻辑结构来设计用例，执行程序并采集程序路径执行信息和外部用户接口结果的测试技术。具有结果反馈功能的模糊测试即属于灰盒 fuzz，如 AFL，会对待测程序进行插装，从而监控每个输入的路径覆盖率，为下一次选择输入文件进行变异提供依据。smart fuzz 是面向具有高度结构化输入（如，PPT，mp3，PDF 等）的程序进行测试的一类模糊测试工具，典型的 smart fuzz 工具如 Peach。使用 Peach 的关键在于名为「Peach Pit」的 xml 配置文件。「Peach Pit」主要包含了文件的数据信息。AFLSmart 在 AFL 的基础上，参照了 Peach 的 File Cracker 组件，将文件按 chunk 划分，抽象为一个可以用 xml 文件描述的树形的结构。</p>
+<h2 id="3-AFL"><a href="#3-AFL" class="headerlink" title="3 AFL++"></a>3 AFL++</h2><h3 id="3-1-种子调度"><a href="#3-1-种子调度" class="headerlink" title="3.1 种子调度"></a>3.1 种子调度</h3><p>AFL++这部分结合的是AFLFast的超强调度算法，调度形式包括 <em>fast, coe, explore, quad, lin, exploit</em>，这些调度对应的是以下参数的功能：</p>
+<ol>
+<li>从队列中选择种子的次数；</li>
+<li>种子覆盖率相同生成的输入的数量；</li>
+<li>相同覆盖率下的生成测试用例平均数；</li>
+</ol>
+<p>默认的调度算法是exploit，AFL++在这些调度方案的基础上又添加了mmopt和rare方案。Mmopt 调度增加了最新的种子用例的分数，以深入研究新发现的路径；Rare 调度忽略了种子的运行时间，并且另外将重点放在边缘很少被其他种子用例执行后覆盖的种子上</p>
+<h3 id="3-2-突变"><a href="#3-2-突变" class="headerlink" title="3.2 突变"></a>3.2 突变</h3><p>这里引入了Custom Mutator API，来支持自定义的突变操作。自定义mutator允许模糊研究在afl++之上构建新的调度、突变和最小化，而不需要像许多当前工具那样对AFL进行分支和修补。这里有很多API操作，需要在实际项目修改fuzz中慢慢学习。</p>
+<p>对于输入状态到I2s的替换，还是基于Readqueen来实现，同时还对此进行了一些优化，比如扩展了着色方面，增加执行速度以及提高有效的概率模糊化。这个mutator不像在最初的REDQUEEN实现中那样使用断点记录比较操作数，而是使用一个类似于WEIZZ中使用的共享表。</p>
+<p>实现了Mopt的core个pilot模式。</p>
+<h3 id="3-3-插桩"><a href="#3-3-插桩" class="headerlink" title="3.3 插桩"></a>3.3 插桩</h3><p>AFL++支持LLVM，GCC，QEMU，Unicorn，QBDI的插桩。</p>
+<p>引入NeverZero 和Saturated Counters优化技术。前者解决 AFL 在处理具有全零字节的输入时可能出现的性能问题，避免无限循环。后者处理 AFL 在测试过程中覆盖率计数器溢出的问题，提高准确度。</p>
+<p>在小节中，AFL++详细描述了这些模式的处理细节，这些细节在使用和查看源码后再具体分析。</p>
+<h3 id="3-4-模式支持"><a href="#3-4-模式支持" class="headerlink" title="3.4 模式支持"></a>3.4 模式支持</h3><p>可以支持GNU/Linux, Android、iOS、macOS、FreeBSD、OpenBSD、NetBSD。</p>
+<p>打包在流行版本Debian、Ubuntu、NixOS、Arch Linux、FreeBSD、Kali Linux。</p>
+<h3 id="3-5-内核模块快照技术"><a href="#3-5-内核模块快照技术" class="headerlink" title="3.5 内核模块快照技术"></a>3.5 内核模块快照技术</h3><p>基于fork()的AFL状态恢复机制对于大量目标来说是一个性能瓶颈，基于Perffuzz实现了内核状态快照，在单核中的平均性能高于fork的2倍。</p>
+<h2 id="4-评估"><a href="#4-评估" class="headerlink" title="4 评估"></a>4 评估</h2><p>作为一款优秀的终极缝合怪，如何把优秀的fuzz结合好是一个关键的步骤。文中选择了9个案例，和6个fuzz组合来测试性能。</p>
+<p><img src="https://raw.githubusercontent.com/yaoxixixi/picture/main/wincore3/202405142140061.png" alt="image-20240514214000846"></p>
+<h2 id="5-未来工作"><a href="#5-未来工作" class="headerlink" title="5 未来工作"></a>5 未来工作</h2><p>1 多线程扩展不理想。（LKM是第一步工作）</p>
+<p>2 对于哈希表的碰撞处理，速度和准确性的平衡。</p>
+<p>3 提前的静态分析再fuzz之前</p>
+<p>4 插件系统。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">yaoxixixi</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://yaoxixixi.github.io/2024/05/14/AFL++%20Combining%20Incremental%20Steps%20of%20Fuzzing%20Research/">https://yaoxixixi.github.io/2024/05/14/AFL++%20Combining%20Incremental%20Steps%20of%20Fuzzing%20Research/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yaoxixixi.github.io" target="_blank">yaoxixixi's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/paper/">paper</a></div><div class="post_share"><div class="social-share" data-image="https://raw.githubusercontent.com/yaoxixixi/picture/main/notdata/notdata/back1.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AFL-Combining-Incremental-Steps-of-Fuzzing-Research"><span class="toc-number">1.</span> <span class="toc-text">AFL++: Combining Incremental Steps of Fuzzing Research</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%91%98%E8%A6%81"><span class="toc-number">1.1.</span> <span class="toc-text">摘要</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.2.</span> <span class="toc-text">1 介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-AFL%E5%92%8C%E4%B8%80%E4%BA%9B%E5%AE%83%E7%9A%84%E6%94%B9%E8%BF%9B"><span class="toc-number">1.3.</span> <span class="toc-text">2 AFL和一些它的改进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-AFL"><span class="toc-number">1.3.1.</span> <span class="toc-text">2.1 AFL</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%99%BA%E8%83%BD%E8%B0%83%E5%BA%A6"><span class="toc-number">1.3.2.</span> <span class="toc-text">2.2 智能调度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%B8%80%E4%BA%9B%E9%9A%9C%E7%A2%8D"><span class="toc-number">1.3.3.</span> <span class="toc-text">2.3 一些障碍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4%E6%94%B9%E5%8F%98%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%85%A5"><span class="toc-number">1.3.4.</span> <span class="toc-text">2.4改变结构化输入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-AFL"><span class="toc-number">1.4.</span> <span class="toc-text">3 AFL++</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%A7%8D%E5%AD%90%E8%B0%83%E5%BA%A6"><span class="toc-number">1.4.1.</span> <span class="toc-text">3.1 种子调度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%AA%81%E5%8F%98"><span class="toc-number">1.4.2.</span> <span class="toc-text">3.2 突变</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%8F%92%E6%A1%A9"><span class="toc-number">1.4.3.</span> <span class="toc-text">3.3 插桩</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%A8%A1%E5%BC%8F%E6%94%AF%E6%8C%81"><span class="toc-number">1.4.4.</span> <span class="toc-text">3.4 模式支持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E5%BF%AB%E7%85%A7%E6%8A%80%E6%9C%AF"><span class="toc-number">1.4.5.</span> <span class="toc-text">3.5 内核模块快照技术</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E8%AF%84%E4%BC%B0"><span class="toc-number">1.5.</span> <span class="toc-text">4 评估</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E6%9C%AA%E6%9D%A5%E5%B7%A5%E4%BD%9C"><span class="toc-number">1.6.</span> <span class="toc-text">5 未来工作</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2021 - 2024 By yaoxixixi</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"></div><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
